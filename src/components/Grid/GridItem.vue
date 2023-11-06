@@ -57,6 +57,7 @@ function playSound(url) {
     font-weight: 600;
     font-size: clamp(14px, 2vmin, 21px);
     cursor: pointer;
+    user-select: none;
   }
 }
 </style>
