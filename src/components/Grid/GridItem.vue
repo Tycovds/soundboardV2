@@ -18,6 +18,7 @@ const props = defineProps({
 })
 let title = ref('');
 let soundUrl = ref('');
+let volume = ref(1);
 
 
 onBeforeMount(async () => {
@@ -37,7 +38,7 @@ onBeforeMount(async () => {
 
 function playSound(url) {
   let audio = new Audio(url);
-  audio.volume = 1;
+  audio.volume = volume.value;
   audio.play();
 }
 </script>
