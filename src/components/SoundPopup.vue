@@ -3,14 +3,22 @@
         <div class="popup">
 
             <div v-if="popupStore.popupState == 'edit'">
-                <form @submit.prevent="handleAudioEdit">
-                    <h1>Editing: {{ popupStore.sound.title}}</h1>
-                    <div>
-                        <input class="input-field" type="text" name="fileTitle" id="file-title" placeholder="Title" v-model="popupStore.sound.title">
-                        <div class="fields-2">
+                <form class="edit-form" @submit.prevent="handleAudioEdit">
+                    <div class="form-header">
+                        <h1>{{ popupStore.sound.title }}</h1>
+                        <svg @click="handleAudioDelete" width="56" height="72" viewBox="0 0 56 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M4 64C4 68.4 7.6 72 12 72H44C48.4 72 52 68.4 52 64V16H4V64ZM12 24H44V64H12V24ZM42 4L38 0H18L14 4H0V12H56V4H42Z"
+                                fill="white" />
+                        </svg>
 
-                            <input type="range" step="0.05" min="0" max="1">
-                            <button type="submit" class="submit-button">Edit</button>
+                    </div>
+                    <div class="form-body">
+                        <input autocomplete="off" class="input-field" type="text" name="fileTitle" id="file-title"
+                            placeholder="Title" v-model="popupStore.sound.title">
+                        <div class="form-body_end">
+                            <input v-model="popupStore.sound.volume" type="range" step="0.05" min="0" max="1">
+                            <button type="submit" class="submit-button">Save</button>
                         </div>
                     </div>
                 </form>
@@ -26,7 +34,8 @@
                                 placeholder="Geef jouw geluid een titel...">
                             <div class="file-input-container">
                                 <label class="file-input-label" for="file-input">Choose a File</label>
-                                <input @change="handleAudioUpload"  type="file" id="file-input" class="file-input" accept=".wav, .mp3" />
+                                <input @change="handleAudioUpload" type="file" id="file-input" class="file-input"
+                                    accept=".wav, .mp3" />
                             </div>
                         </div>
                         <div v-else class="uploaded">
@@ -45,7 +54,11 @@
 <script setup>
 
 import { usePopupStore } from '../stores/popup';
+import { updateMetadata, ref, deleteObject } from 'firebase/storage'
+import { storageRef } from '../firebase'
+import { useFilestore } from '../stores/audioFiles'
 const popupStore = usePopupStore();
+const fileStore = useFilestore()
 
 
 function handleAudioUpload(e) {
@@ -54,8 +67,23 @@ function handleAudioUpload(e) {
     }
 }
 
-function handleAudioEdit(){
-    console.log('edited');
+function handleAudioEdit() {
+    updateMetadata(ref(storageRef, popupStore.sound.reference), { customMetadata: { title: popupStore.sound.title, volume: popupStore.sound.volume } })
+        .then(() => {
+            console.log('Metadata updated successfully.');
+              Object.assign(fileStore.files[fileStore.files.map((value) =>  value.reference).indexOf(popupStore.sound.reference)], {title: popupStore.sound.title, volume: popupStore.sound.volume} )
+
+            popupStore.close()
+
+        })
+        .catch(error => {
+            console.error('Error updating metadata:', error);
+        });
+}
+function handleAudioDelete(){
+    deleteObject(ref(storageRef, popupStore.sound.reference));
+    fileStore.files.splice(fileStore.files.map((value) =>  value.reference).indexOf(popupStore.sound.reference), 1);
+    popupStore.close()
 }
 
 
@@ -66,10 +94,12 @@ function handleAudioEdit(){
 .popup-wrapper {
     position: absolute;
     inset: 0 0 0 0;
-    z-index: 2;
+    z-index: 5;
     display: flex;
     justify-content: center;
     align-items: center;
+    backdrop-filter: blur(3px);
+    transition: backdrop-filter 1s ease;
 
     .popup {
         // height: 50vh;
@@ -82,10 +112,56 @@ function handleAudioEdit(){
         display: flex;
         flex-direction: column;
         align-items: center;
+        max-width: 500px;
 
-        h1 {
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 1rem;
+
+            h1 {
+                word-break: break-all;
+            }
+
+            svg {
+                height: 24px;
+                cursor: pointer;
+
+                path {
+                    transition: fill 400ms ease;
+                }
+
+                &:hover path {
+                    fill: #ff4444;
+                }
+            }
         }
+
+        .form-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+
+            .form-body_end {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 2rem;
+
+                input[type="range"] {
+                    flex: 4;
+                }
+
+                button[type="submit"] {
+                    flex: 1;
+                }
+
+            }
+        }
+
+
+
 
         .input-fields {
             display: flex;
@@ -154,5 +230,4 @@ function handleAudioEdit(){
 
 
     }
-}
-</style>
+}</style>

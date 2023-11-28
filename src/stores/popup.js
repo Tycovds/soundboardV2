@@ -11,20 +11,25 @@ export const usePopupStore = defineStore('popup', {
       title: null,
       reference: null,
       file: null,
-      playUrl: null
+      playUrl: null,
+      volume: 1
     }
   }),
   actions: {
     close() {
       this.popupState = 'closed'
-      this.sound = { title: null, reference: null, file: null }
+      this.sound = {   title: null,
+        reference: null,
+        file: null,
+        playUrl: null,
+        volume: 1 }
     },
-    edit(title, reference, url) {
+    edit(title, reference, url, volume) {
       this.popupState = 'edit',
       this.sound.title = title;
       this.sound.reference = reference;
       this.sound.playUrl = url;
-      console.log(this.sound)
+      this.sound.volume = volume;
     },
     upload() {
       this.popupState = 'upload'
@@ -33,7 +38,7 @@ export const usePopupStore = defineStore('popup', {
       const audioStorageRef = soundReference(soundRef, this.sound.file.name)
 
       uploadBytes(audioStorageRef, this.sound.file.name, {
-        customMetadata: { title: this.sound.title }
+        customMetadata: { title: this.sound.title, volume: this.sound.volume }
       })
         .then((snapshot) => {
           console.log('Uploaded a file:', snapshot)

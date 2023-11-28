@@ -16,6 +16,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
-const soundRef = ref(storage, 'sounds/');
-export {soundRef}
+const storageRef = getStorage(app);
+const soundRef = ref(storageRef, 'sounds/');
+export {soundRef, storageRef}

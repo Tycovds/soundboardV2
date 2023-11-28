@@ -7,7 +7,10 @@
 <script setup>
 import GridItem from './GridItem.vue';
 import { useFilestore } from '../../stores/audioFiles';
-const files = useFilestore().files;
+const files = useFilestore().files
+
+
+
 </script>
 
 <style lang="scss" scoped>

@@ -2,14 +2,12 @@
 
 <template>
   <div @click="handleClick" class="grid-item">
-    <p>{{ soundData.title }}</p>
+    <p>{{ props.sound.title }}</p>
     <img v-if="menuStore.isEditing" src="../../assets//icons/Edit.svg" alt="editing icon">
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getMetadata, getDownloadURL } from 'firebase/storage'
 import { useMenuStore } from '../../stores/menu';
 import { usePopupStore } from '../../stores/popup';
 
@@ -18,38 +16,14 @@ const popupStore = usePopupStore();
 
 const props = defineProps({
   sound: {
-    required: true,
-    type: Object
+    required: true
   }
 })
 
-let soundData = ref({
-  title: null,
-  reference: null,
-  url: null
-})
 
-
-
-onMounted(async () => {
-
-  getDownloadURL(props.sound).then((url) => {
-    soundData.value.url = url;
-  });
-
-  getMetadata(props.sound)
-    .then((metadata) => {
-      console.log(metadata)
-      soundData.value.title = metadata.customMetadata.title;
-      soundData.value.reference = metadata.name;
-    })
-    .catch(() => {
-      soundData.value.title = 'Geen titel';
-    });
-})
 const handleClick = () => {
   if (menuStore.isEditing) {
-    popupStore.edit(soundData.value.title, soundData.value.reference, soundData.value.url)
+    popupStore.edit(props.sound.title, props.sound.reference, props.sound.url, props.sound.volume)
     menuStore.toggleEdit()
   }
   else if (menuStore.isUploading) {
@@ -61,8 +35,8 @@ const handleClick = () => {
 }
 
 function playSound() {
-  let audio = new Audio(soundData.value.url);
-  audio.volume = 1;
+  let audio = new Audio(props.sound.playUrl);
+  audio.volume = props.sound.volume;
   audio.play();
 }
 </script>

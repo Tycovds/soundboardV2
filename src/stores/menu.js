@@ -13,7 +13,11 @@ export const useMenuStore = defineStore('menu',  {
     },
     toggleEdit(){
       this.isEditing = !this.isEditing;
+      this.isUploading = false;
     },
+    toggleUpload(){
+      
+    }
     
   }
   })
