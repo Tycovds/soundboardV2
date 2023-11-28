@@ -3,11 +3,17 @@ import {defineStore} from 'pinia';
 
 export const useMenuStore = defineStore('menu',  {
   state: () => ({
-    isOpen: false
+    isOpen: false,
+    isEditing: false,
+    isUploading: false
   }),
   actions: {
-    toggle(){
+    toggleOpen(){
       this.isOpen = !this.isOpen
-    }
+    },
+    toggleEdit(){
+      this.isEditing = !this.isEditing;
+    },
+    
   }
   })

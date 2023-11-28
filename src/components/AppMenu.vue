@@ -2,10 +2,10 @@
     <header class="menu">
         <div :class="[menu.isOpen ? 'clipped wrapperOpen' : 'clipped']">
             <div :class="[menu.isOpen ? 'wrapper open' : 'wrapper']">
-                <div @click="menu.toggle" class="menu-item">
+                <div @click="menu.toggleOpen" class="menu-item">
                     <img src="../assets/icons/Menu.svg" alt="menu icon" />
                 </div>
-                <div @click="popup.edit()" class="menu-item">
+                <div @click="menu.toggleEdit" class="menu-item">
                     <img src="../assets/icons/Edit.svg" alt="menu icon" />
                 </div>
                 <div @click="popup.upload()" class="menu-item">

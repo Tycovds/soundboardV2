@@ -2,23 +2,36 @@
     <div @click.self="popupStore.close()" class="popup-wrapper">
         <div class="popup">
 
-            <div v-if="popupStore.state == 'edit'">
-                <form @submit.prevent>
-                    <h1>Editing</h1>
-                    <div class="input-fields">
-                        <input class="input-field" type="text" name="fileTitle" id="file-title" placeholder="Titel">
-                        <button type="submit">Edit</button>
+            <div v-if="popupStore.popupState == 'edit'">
+                <form @submit.prevent="handleAudioEdit">
+                    <h1>Editing: {{ popupStore.sound.title}}</h1>
+                    <div>
+                        <input class="input-field" type="text" name="fileTitle" id="file-title" placeholder="Title" v-model="popupStore.sound.title">
+                        <div class="fields-2">
+
+                            <input type="range" step="0.05" min="0" max="1">
+                            <button type="submit" class="submit-button">Edit</button>
+                        </div>
                     </div>
                 </form>
             </div>
-            <div v-if="popupStore.state == 'upload'">
+
+
+            <div v-if="popupStore.popupState == 'upload'">
                 <form @submit.prevent>
                     <h1>Upload a new sound</h1>
                     <div class="input-fields">
-                        <input class="input-field" type="text" name="fileTitle" id="file-title" placeholder="Geef jouw geluid een titel...">
-                        <div class="file-input-container">
-                            <label class="file-input-label" for="file-input">Choose a File</label>
-                            <input type="file" id="file-input" class="file-input" accept=".wav, .mp3" />
+                        <div v-if="!popupStore.audioFile" class="uploading">
+                            <input class="input-field" type="text" name="fileTitle" id="file-title"
+                                placeholder="Geef jouw geluid een titel...">
+                            <div class="file-input-container">
+                                <label class="file-input-label" for="file-input">Choose a File</label>
+                                <input @change="handleAudioUpload"  type="file" id="file-input" class="file-input" accept=".wav, .mp3" />
+                            </div>
+                        </div>
+                        <div v-else class="uploaded">
+                            <input type="range" step="0.05" min="0" max="1">
+                            <button>Play sound</button>
                         </div>
                     </div>
                     <button type="submit" class="submit-button">Upload</button>
@@ -30,8 +43,22 @@
 </template>
 
 <script setup>
+
 import { usePopupStore } from '../stores/popup';
 const popupStore = usePopupStore();
+
+
+function handleAudioUpload(e) {
+    if (e.target.files[0].length > 0) {
+        popupStore.sound.file = e.target.files[0];
+    }
+}
+
+function handleAudioEdit(){
+    console.log('edited');
+}
+
+
 
 </script>
 
@@ -93,6 +120,7 @@ const popupStore = usePopupStore();
                 box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
             }
         }
+
         #file-title {
             width: 300px;
             padding: 10px 20px;
