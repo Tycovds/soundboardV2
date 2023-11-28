@@ -35,7 +35,7 @@ onBeforeMount(async () => {
       <AudioGrid v-else />
     </div>
   </main>
-  <SoundPopup v-if="popupStore.state !== 'closed'" />
+  <SoundPopup v-if="popupStore.popupState !== 'closed'" />
 </template>
 
 <style lang="scss" scoped>
