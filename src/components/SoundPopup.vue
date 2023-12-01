@@ -6,7 +6,8 @@
                 <form class="edit-form" @submit.prevent="handleAudioEdit">
                     <div class="form-header">
                         <h1>{{ popupStore.sound.title }}</h1>
-                        <svg @click="handleAudioDelete" width="56" height="72" viewBox="0 0 56 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg @click="handleAudioDelete" width="56" height="72" viewBox="0 0 56 72" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
                             <path
                                 d="M4 64C4 68.4 7.6 72 12 72H44C48.4 72 52 68.4 52 64V16H4V64ZM12 24H44V64H12V24ZM42 4L38 0H18L14 4H0V12H56V4H42Z"
                                 fill="white" />
@@ -17,7 +18,7 @@
                         <input autocomplete="off" class="input-field" type="text" name="fileTitle" id="file-title"
                             placeholder="Title" v-model="popupStore.sound.title">
                         <div class="form-body_end">
-                            <input v-model="popupStore.sound.volume" type="range" step="0.05" min="0" max="1">
+                            <input v-model="popupStore.sound.volume" type="range" step="0.05" min="0.1" max="1">
                             <button type="submit" class="submit-button">Save</button>
                         </div>
                     </div>
@@ -26,24 +27,27 @@
 
 
             <div v-if="popupStore.popupState == 'upload'">
-                <form @submit.prevent>
-                    <h1>Upload a new sound</h1>
-                    <div class="input-fields">
-                        <div v-if="!popupStore.audioFile" class="uploading">
-                            <input class="input-field" type="text" name="fileTitle" id="file-title"
-                                placeholder="Geef jouw geluid een titel...">
-                            <div class="file-input-container">
-                                <label class="file-input-label" for="file-input">Choose a File</label>
-                                <input @change="handleAudioUpload" type="file" id="file-input" class="file-input"
-                                    accept=".wav, .mp3" />
-                            </div>
-                        </div>
-                        <div v-else class="uploaded">
-                            <input type="range" step="0.05" min="0" max="1">
-                            <button>Play sound</button>
-                        </div>
+                <form @submit.prevent="handleAudioUpload">
+                    <div class="form-header">
+                        <h1>Upload a new sound</h1>
                     </div>
-                    <button type="submit" class="submit-button">Upload</button>
+                    <div class="form-body">
+                        <input class="input-field" type="text" name="fileTitle" id="file-title"
+                            placeholder="Geef jouw geluid een titel..." autocomplete="off" v-model="popupStore.sound.title">
+                        <div v-if="!popupStore.sound.file" class="form-body_end">
+                            <label class="file-input-label" for="file-input">Choose a File</label>
+                            <input @change="handleFilePick" type="file" id="file-input" class="file-input"
+                                accept=".wav, .mp3" />
+                        </div>
+                        <div class="form-body_end">
+                            <input v-if="popupStore.sound.file" type="range" step="0.05" min="0.1" max="1"
+                                v-model="popupStore.sound.volume">
+                            <button type="button" @click="playSound" v-if="popupStore.sound.file"><img
+                                    src="../assets/icons/Audio.svg" /></button>
+                        </div>
+                        <button v-if="popupStore.sound.file" type="submit" class="submit-button upload-btn">Upload</button>
+
+                    </div>
                 </form>
             </div>
 
@@ -54,16 +58,39 @@
 <script setup>
 
 import { usePopupStore } from '../stores/popup';
-import { updateMetadata, ref, deleteObject } from 'firebase/storage'
+import { updateMetadata, ref, deleteObject, uploadBytes } from 'firebase/storage'
 import { storageRef } from '../firebase'
 import { useFilestore } from '../stores/audioFiles'
+import { ref as vueRef } from 'vue'
 const popupStore = usePopupStore();
 const fileStore = useFilestore()
 
-
-function handleAudioUpload(e) {
-    if (e.target.files[0].length > 0) {
+let playUrl = vueRef(null)
+async function handleFilePick(e) {
+    if (e.target.files.length > 0) {
         popupStore.sound.file = e.target.files[0];
+        playUrl.value = URL.createObjectURL(e.target.files[0]);
+    }
+}
+function playSound() {
+    let audio = new Audio(playUrl.value);
+    audio.volume = popupStore.sound.volume;
+    audio.play();
+}
+async function handleAudioUpload() {
+    if (popupStore.sound.file !== null && popupStore.sound.title !== null) {
+        uploadBytes(ref(storageRef, 'sounds/' + 'popupStore.sound.file.name'), popupStore.sound.file, { customMetadata: { title: popupStore.sound.title, volume: popupStore.sound.volume } })
+        .then((val) => {
+            fileStore.files.push({
+            title: popupStore.sound.title,
+            reference: val.ref,
+            playUrl: playUrl,
+            volume: popupStore.sound.volume
+          })
+            popupStore.close()
+        })
+    } else {
+        alert('Choose title and file')
     }
 }
 
@@ -71,7 +98,7 @@ function handleAudioEdit() {
     updateMetadata(ref(storageRef, popupStore.sound.reference), { customMetadata: { title: popupStore.sound.title, volume: popupStore.sound.volume } })
         .then(() => {
             console.log('Metadata updated successfully.');
-              Object.assign(fileStore.files[fileStore.files.map((value) =>  value.reference).indexOf(popupStore.sound.reference)], {title: popupStore.sound.title, volume: popupStore.sound.volume} )
+            Object.assign(fileStore.files[fileStore.files.map((value) => value.reference).indexOf(popupStore.sound.reference)], { title: popupStore.sound.title, volume: popupStore.sound.volume })
 
             popupStore.close()
 
@@ -80,9 +107,9 @@ function handleAudioEdit() {
             console.error('Error updating metadata:', error);
         });
 }
-function handleAudioDelete(){
+function handleAudioDelete() {
     deleteObject(ref(storageRef, popupStore.sound.reference));
-    fileStore.files.splice(fileStore.files.map((value) =>  value.reference).indexOf(popupStore.sound.reference), 1);
+    fileStore.files.splice(fileStore.files.map((value) => value.reference).indexOf(popupStore.sound.reference), 1);
     popupStore.close()
 }
 
@@ -151,22 +178,30 @@ function handleAudioDelete(){
 
                 input[type="range"] {
                     flex: 4;
+
                 }
 
-                button[type="submit"] {
+                button {
                     flex: 1;
+                    border-radius: 12px;
+                    background: linear-gradient(145deg, #1f1f1f, #242424);
+                    box-shadow: 11px 11px 30px #1c1c1c,
+                        -11px -11px 30px #282828;
+                    padding: 0.5rem;
+                    cursor: pointer;
+
+                    img {
+                        height: 24px;
+                        width: 24px;
+                        object-fit: contain;
+
+                    }
                 }
-
             }
-        }
 
-
-
-
-        .input-fields {
-            display: flex;
-            gap: 10px;
-            align-items: center;
+            .upload-btn {
+                align-self: flex-end;
+            }
         }
 
         .file-input {
@@ -230,4 +265,5 @@ function handleAudioDelete(){
 
 
     }
-}</style>
+}
+</style>
