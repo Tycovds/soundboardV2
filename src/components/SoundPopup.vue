@@ -70,20 +70,26 @@ import { updateMetadata, ref, deleteObject, uploadBytes } from 'firebase/storage
 import { storageRef } from '../firebase'
 import { useFilestore } from '../stores/audioFiles'
 import { ref as vueRef } from 'vue'
+import {useToast} from 'vue-toastify';
 const popupStore = usePopupStore();
 const fileStore = useFilestore()
+const toast = useToast()
+toast.settings({errorDuration: 2000, warningInfoDuration: 2000, successDuration: 2000});
+
 
 let playUrl = vueRef(null)
 async function handleFilePick(e) {
     if (e.target.files.length > 0) {
         popupStore.sound.file = e.target.files[0];
         playUrl.value = URL.createObjectURL(e.target.files[0]);
+        toast.success('', 'Bestand gekozen')
     }
 }
 function playSound(url) {
     let audio = new Audio(url);
     audio.volume = popupStore.sound.volume;
     audio.play();
+    
 }
 async function handleAudioUpload() {
     if (popupStore.sound.file !== null && popupStore.sound.title !== null) {
@@ -96,9 +102,10 @@ async function handleAudioUpload() {
                     volume: popupStore.sound.volume
                 })
                 popupStore.close()
+                toast.success('', 'Uploaded sound')
             })
     } else {
-        alert('Choose title and file')
+        toast.warning('Choose a file & title', 'Error')
     }
 }
 
@@ -109,16 +116,18 @@ function handleAudioEdit() {
             Object.assign(fileStore.files[fileStore.files.map((value) => value.reference).indexOf(popupStore.sound.reference)], { title: popupStore.sound.title, volume: popupStore.sound.volume })
 
             popupStore.close()
-
+            toast.success('', 'Edited sound')
         })
         .catch(error => {
             console.error('Error updating metadata:', error);
         });
+        
 }
 function handleAudioDelete() {
     deleteObject(ref(storageRef, popupStore.sound.reference));
     fileStore.files.splice(fileStore.files.map((value) => value.reference).indexOf(popupStore.sound.reference), 1);
     popupStore.close()
+    toast.error('Deleted', {duration: 2000})
 }
 
 
@@ -137,8 +146,6 @@ function handleAudioDelete() {
     transition: backdrop-filter 1s ease;
 
     .popup {
-        // height: 50vh;
-        // width: clamp(100px, 50vmax, 600px);
         border-radius: 29px;
         background: linear-gradient(145deg, #242424, #1f1f1f);
         box-shadow: 32px 32px 64px #151515,

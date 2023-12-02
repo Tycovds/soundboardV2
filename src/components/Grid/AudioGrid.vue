@@ -5,9 +5,9 @@
 </template>
 
 <script setup>
-import GridItem from './GridItem.vue';
+import GridItem from '@/components/Grid/GridItem.vue';
 import { useFilestore } from '../../stores/audioFiles';
-const files = useFilestore().files
+const files = useFilestore().files;
 
 
 
@@ -20,7 +20,8 @@ const files = useFilestore().files
     gap: 2rem;
     align-items: stretch;
     justify-content: stretch;
-    width: 90%
+    width: 90%;
+    max-width: 1100px;
 }
 
 @media screen and (min-width: 350px){

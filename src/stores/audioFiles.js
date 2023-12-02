@@ -10,34 +10,39 @@ export const useFilestore = defineStore('files', {
   actions: {
     async getFiles() {
       try {
-        const res = await listAll(soundRef)
-        res.items.forEach(async (item) => {
+        const res = await listAll(soundRef);
+        const promises = res.items.map(async (item) => {
           let soundData = {
             title: null,
             reference: null,
             playUrl: null,
-            volume: 1
+            volume: 1,
+            createdAt: null,
+          };
+    
+          soundData.playUrl = await getDownloadURL(item);
+    
+          try {
+            const metadata = await getMetadata(item);
+            soundData.title = metadata.customMetadata.title;
+            soundData.createdAt = metadata.timeCreated;
+            if (metadata.customMetadata.volume) {
+              soundData.volume = metadata.customMetadata.volume;
+            }
+            soundData.reference = metadata.fullPath;
+          } catch (error) {
+            soundData.title = 'Geen titel';
           }
-          await getDownloadURL(item).then((url) => {
-            soundData.playUrl = url
-          })
-
-          await getMetadata(item)
-            .then((metadata) => {
-              soundData.title = metadata.customMetadata.title
-              if (metadata.customMetadata.volume) {
-                soundData.volume = metadata.customMetadata.volume
-              }
-              soundData.reference = metadata.fullPath
-            })
-            .catch(() => {
-              soundData.title = 'Geen titel'
-            })
-          this.files.push(soundData)
-        })
+    
+          return soundData;
+        });
+    
+        this.files = await Promise.all(promises);
+        this.files.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       } catch (err) {
-        console.log(err)
+        console.log(err);
       }
     }
+    
   }
 })
