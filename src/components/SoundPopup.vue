@@ -1,11 +1,11 @@
 <template>
-    <div @click.self="popupStore.close()" class="popup-wrapper">
+    <div class="popup-wrapper">
         <div class="popup">
 
             <div v-if="popupStore.popupState == 'edit'">
                 <form class="edit-form" @submit.prevent="handleAudioEdit">
                     <div class="form-header">
-                        <h1>{{ popupStore.sound.title }}</h1>
+                        <h1>Edit sound</h1>
                         <svg @click="handleAudioDelete" width="56" height="72" viewBox="0 0 56 72" fill="none"
                             xmlns="http://www.w3.org/2000/svg">
                             <path
@@ -17,9 +17,14 @@
                     <div class="form-body">
                         <input autocomplete="off" class="input-field" type="text" name="fileTitle" id="file-title"
                             placeholder="Title" v-model="popupStore.sound.title">
-                        <div class="form-body_end">
+                        <div class="sound-preview">
                             <input v-model="popupStore.sound.volume" type="range" step="0.05" min="0.1" max="1">
-                            <button type="submit" class="submit-button">Save</button>
+                            <button type="button" @click="() => { playSound(popupStore.sound.playUrl) }"><img
+                                    src="../assets/icons/Audio.svg" /></button>
+                        </div>
+                        <div class="form-controls">
+                            <p @click.self="popupStore.close()">Cancel</p>
+                            <button v-if="popupStore.sound.title !== ''" type="submit" class="submit-button">Save</button>
                         </div>
                     </div>
                 </form>
@@ -34,18 +39,21 @@
                     <div class="form-body">
                         <input class="input-field" type="text" name="fileTitle" id="file-title"
                             placeholder="Geef jouw geluid een titel..." autocomplete="off" v-model="popupStore.sound.title">
-                        <div v-if="!popupStore.sound.file" class="form-body_end">
+                        <div v-if="!popupStore.sound.file" class="sound-preview">
                             <label class="file-input-label" for="file-input">Choose a File</label>
                             <input @change="handleFilePick" type="file" id="file-input" class="file-input"
                                 accept=".wav, .mp3" />
                         </div>
-                        <div class="form-body_end">
+                        <div class="sound-preview">
                             <input v-if="popupStore.sound.file" type="range" step="0.05" min="0.1" max="1"
                                 v-model="popupStore.sound.volume">
-                            <button type="button" @click="playSound" v-if="popupStore.sound.file"><img
+                            <button type="button" @click="() => { playSound(playUrl) }" v-if="popupStore.sound.file"><img
                                     src="../assets/icons/Audio.svg" /></button>
                         </div>
-                        <button v-if="popupStore.sound.file" type="submit" class="submit-button upload-btn">Upload</button>
+                        <div class="form-controls">
+                            <p @click.self="popupStore.close()">Cancel</p>
+                            <button v-if="popupStore.sound.file && popupStore.sound.title !== null && popupStore.sound.title !== ''" type="submit" class="submit-button">Upload</button>
+                        </div>
 
                     </div>
                 </form>
@@ -72,23 +80,23 @@ async function handleFilePick(e) {
         playUrl.value = URL.createObjectURL(e.target.files[0]);
     }
 }
-function playSound() {
-    let audio = new Audio(playUrl.value);
+function playSound(url) {
+    let audio = new Audio(url);
     audio.volume = popupStore.sound.volume;
     audio.play();
 }
 async function handleAudioUpload() {
     if (popupStore.sound.file !== null && popupStore.sound.title !== null) {
         uploadBytes(ref(storageRef, 'sounds/' + 'popupStore.sound.file.name'), popupStore.sound.file, { customMetadata: { title: popupStore.sound.title, volume: popupStore.sound.volume } })
-        .then((val) => {
-            fileStore.files.push({
-            title: popupStore.sound.title,
-            reference: val.ref,
-            playUrl: playUrl,
-            volume: popupStore.sound.volume
-          })
-            popupStore.close()
-        })
+            .then((val) => {
+                fileStore.files.push({
+                    title: popupStore.sound.title,
+                    reference: val.ref,
+                    playUrl: playUrl,
+                    volume: popupStore.sound.volume
+                })
+                popupStore.close()
+            })
     } else {
         alert('Choose title and file')
     }
@@ -135,11 +143,12 @@ function handleAudioDelete() {
         background: linear-gradient(145deg, #242424, #1f1f1f);
         box-shadow: 32px 32px 64px #151515,
             -32px -32px 64px #2f2f2f;
-        padding: clamp(10px, 3%, 30px);
+        padding: clamp(10px, 6vmin, 24px) clamp(20px, 6vmin, 50px);
         display: flex;
         flex-direction: column;
         align-items: center;
-        max-width: 500px;
+        max-width: 80vw;
+        position: relative;
 
         .form-header {
             display: flex;
@@ -149,10 +158,11 @@ function handleAudioDelete() {
 
             h1 {
                 word-break: break-all;
+                font-size: 24px;
             }
 
             svg {
-                height: 24px;
+                height: 20px;
                 cursor: pointer;
 
                 path {
@@ -170,7 +180,7 @@ function handleAudioDelete() {
             flex-direction: column;
             gap: 1rem;
 
-            .form-body_end {
+            .sound-preview {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -182,12 +192,13 @@ function handleAudioDelete() {
                 }
 
                 button {
-                    flex: 1;
-                    border-radius: 12px;
-                    background: linear-gradient(145deg, #1f1f1f, #242424);
-                    box-shadow: 11px 11px 30px #1c1c1c,
-                        -11px -11px 30px #282828;
-                    padding: 0.5rem;
+                    // flex: 1;
+                    // border-radius: 12px;
+                    // background: linear-gradient(145deg, #1f1f1f, #242424);
+                    // box-shadow: 11px 11px 30px #1c1c1c,
+                    //     -11px -11px 30px #282828;
+                    background: none;
+                    // padding: 0.5rem;
                     cursor: pointer;
 
                     img {
@@ -199,69 +210,82 @@ function handleAudioDelete() {
                 }
             }
 
-            .upload-btn {
-                align-self: flex-end;
+            .form-controls {
+             display: flex;
+             justify-content: flex-end;
+             align-items: center;
+             gap: 1rem;
+             p {
+                cursor: pointer;
+             }
+            }
+
+            .file-input {
+                display: none;
+
+            }
+
+            .file-input-label {
+                cursor: pointer;
+                /* Show a pointer cursor on hover */
+                padding: 10px 20px;
+                background-color: #2f8cef;
+                color: #fff;
+                border: none;
+                border-radius: 5px;
+                font-size: 16px;
+                transition: background-color 0.2s;
+
+                /* Styling on hover */
+                &:hover {
+                    background-color: #104b8a;
+                }
+
+                /* Styling on focus (for accessibility) */
+                &:focus {
+                    outline: none;
+                    box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
+                }
+            }
+
+            #file-title {
+                width: 100%;
+
+                max-width: 300px;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 5px;
+
+            }
+
+            /* Custom button style */
+            .submit-button {
+                padding: 10px 20px;
+                background-color: #3472b4;
+                color: #fff;
+                border: none;
+                border-radius: 5px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: background-color 0.2s;
+                
+
+
+                /* Styling on hover */
+                &:hover {
+                    background-color: #1b5088;
+                }
+
+                /* Styling on focus (for accessibility) */
+                &:focus {
+                    outline: none;
+                    box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
+                }
             }
         }
 
-        .file-input {
-            display: none;
 
-        }
 
-        .file-input-label {
-            cursor: pointer;
-            /* Show a pointer cursor on hover */
-            padding: 10px 20px;
-            background-color: #2f8cef;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: background-color 0.2s;
-
-            /* Styling on hover */
-            &:hover {
-                background-color: #104b8a;
-            }
-
-            /* Styling on focus (for accessibility) */
-            &:focus {
-                outline: none;
-                box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
-            }
-        }
-
-        #file-title {
-            width: 300px;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-
-        }
-
-        /* Custom button style */
-        .submit-button {
-            padding: 10px 20px;
-            background-color: #3472b4;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-
-            /* Styling on hover */
-            &:hover {
-                background-color: #1b5088;
-            }
-
-            /* Styling on focus (for accessibility) */
-            &:focus {
-                outline: none;
-                box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
-            }
-        }
 
 
     }

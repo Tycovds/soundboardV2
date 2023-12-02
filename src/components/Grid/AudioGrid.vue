@@ -16,7 +16,33 @@ const files = useFilestore().files
 <style lang="scss" scoped>
 .grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(1, 1fr);
     gap: 2rem;
+    align-items: stretch;
+    justify-content: stretch;
+    width: 90%
+}
+
+@media screen and (min-width: 350px){
+    
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+   
+    }
+}
+@media screen and (min-width: 676px){
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media screen and (min-width: 1024px){
+    .grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+@media screen and (min-width: 1400px){
+    .grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
 }
 </style>

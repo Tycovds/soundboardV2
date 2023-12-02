@@ -31,10 +31,11 @@ const popup = usePopupStore();
   
 <style scoped>
 .menu {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 2rem;
     z-index: 3;
+    overflow: hidden;
 }
 
 .wrapper {
@@ -83,6 +84,17 @@ const popup = usePopupStore();
 
 .wrapperOpen {
     top: 0px;
+}
+@media screen and (max-width:676px){
+    .menu {
+        bottom: 0;
+        right: 2rem;
+        left: unset;
+        transform: rotate(180deg);
+    }
+    .menu-item {
+        transform: rotate(180deg);
+    }
 }
 </style>
   

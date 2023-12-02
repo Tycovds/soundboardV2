@@ -1,5 +1,5 @@
 <script setup>
-import AppMenu from '../components/AppMenu.vue'
+import AppMenu from '../components/appmenu.vue'
 import { ref, onBeforeMount } from 'vue';
 import AudioGrid from '../components/Grid/AudioGrid.vue';
 import SoundPopup from '../components/SoundPopup.vue';
@@ -41,7 +41,6 @@ onBeforeMount(async () => {
 <style lang="scss" scoped>
 main {
   display: flex;
-  align-items: center;
   height: 100%;
   padding: clamp(16px, 3%, 40px);
   flex-direction: column;
