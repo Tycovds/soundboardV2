@@ -23,7 +23,7 @@
                                     src="../assets/icons/Audio.svg" /></button>
                         </div>
                         <div class="form-controls">
-                            <p @click.self="popupStore.close()">Cancel</p>
+                            <p @click.self="popupStore.close">Cancel</p>
                             <button v-if="popupStore.sound.title !== ''" type="submit" class="submit-button">Save</button>
                         </div>
                     </div>
@@ -51,7 +51,7 @@
                                     src="../assets/icons/Audio.svg" /></button>
                         </div>
                         <div class="form-controls">
-                            <p @click.self="popupStore.close()">Cancel</p>
+                            <p @click.self="popupStore.close">Cancel</p>
                             <button v-if="popupStore.sound.file && popupStore.sound.title !== null && popupStore.sound.title !== ''" type="submit" class="submit-button">Upload</button>
                         </div>
 
@@ -87,7 +87,7 @@ function playSound(url) {
 }
 async function handleAudioUpload() {
     if (popupStore.sound.file !== null && popupStore.sound.title !== null) {
-        uploadBytes(ref(storageRef, 'sounds/' + 'popupStore.sound.file.name'), popupStore.sound.file, { customMetadata: { title: popupStore.sound.title, volume: popupStore.sound.volume } })
+        uploadBytes(ref(storageRef, 'sounds/' + popupStore.sound.file.name), popupStore.sound.file, { customMetadata: { title: popupStore.sound.title, volume: popupStore.sound.volume } })
             .then((val) => {
                 fileStore.files.push({
                     title: popupStore.sound.title,
