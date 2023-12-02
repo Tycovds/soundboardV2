@@ -1,8 +1,8 @@
 <script setup>
-import AppMenu from '../components/appmenu.vue'
+import AppMenu from '@/components/AppMenu.vue'
 import { ref, onBeforeMount } from 'vue';
 import AudioGrid from '../components/Grid/AudioGrid.vue';
-import SoundPopup from '../components/SoundPopup.vue';
+import SoundPopup from '@/components/SoundPopup.vue';
 import { usePopupStore } from '../stores/popup';
 import { useFilestore } from '../stores/audioFiles'
 const soundStore = useFilestore()
