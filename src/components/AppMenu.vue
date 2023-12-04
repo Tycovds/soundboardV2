@@ -91,6 +91,7 @@ const popup = usePopupStore();
         right: 2rem;
         left: unset;
         transform: rotate(180deg);
+        top: unset;
     }
     .menu-item {
         transform: rotate(180deg);

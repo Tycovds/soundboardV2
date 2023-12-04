@@ -127,7 +127,7 @@ function handleAudioDelete() {
     deleteObject(ref(storageRef, popupStore.sound.reference));
     fileStore.files.splice(fileStore.files.map((value) => value.reference).indexOf(popupStore.sound.reference), 1);
     popupStore.close()
-    toast.error('Deleted', {duration: 2000})
+    toast.error('', 'Deleted sound')
 }
 
 
